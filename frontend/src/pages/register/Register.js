@@ -9,34 +9,75 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    role: "user", // Default role value
+    role: "user",
   });
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   const handleChange = (e) => {
-    setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setInputs((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleClick = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await axios.post(
-        "http://localhost:8800/api/auth/register",
-        inputs
-      );
+    // Validate form fields
+    let valid = true;
+    const newErrors = {};
 
-      if (response.status === 200) {
-        navigate("/login");
-      } else {
-        setError("Registration failed. Please try again.");
+    if (!inputs.name) {
+      valid = false;
+      newErrors.name = "Name is required";
+    }
+
+    if (!inputs.email) {
+      valid = false;
+      newErrors.email = "Email is required";
+    }
+
+    if (!inputs.password) {
+      valid = false;
+      newErrors.password = "Password is required";
+    }
+
+    if (valid) {
+      try {
+        const response = await axios.post(
+          "http://localhost:8800/api/auth/register",
+          inputs
+        );
+
+        if (response.status === 200) {
+          navigate("/login");
+        } else {
+          setErrors({
+            ...errors,
+            general: "Registration failed. Please try again.",
+          });
+        }
+      } catch (err) {
+        if (err.response && err.response.data) {
+          setErrors({
+            ...errors,
+            general:
+              err.response.data.error ||
+              "Registration failed. Please try again.",
+          });
+        } else {
+          setErrors({
+            ...errors,
+            general: "An unexpected error occurred. Please try again later.",
+          });
+        }
       }
-    } catch (err) {
-      if (err.response && err.response.data) {
-        setError(err.response.data.error || "Registration failed. Please try again.");
-      } else {
-        setError("An unexpected error occurred. Please try again later.");
-      }
+    } else {
+      // Update errors state if validation fails
+      setErrors(newErrors);
     }
   };
 
@@ -44,9 +85,7 @@ const Register = () => {
     <div className="register">
       <div className="card">
         <div className="left">
-          <p>
-            Create an account Be a part of Extrovertism
-          </p>
+          <p>Create an account Be a part of Extrovertism</p>
           <span>Do you have an account?</span>
           <Link to="/login">
             <button>Login</button>
@@ -59,31 +98,32 @@ const Register = () => {
               type="text"
               placeholder="Name"
               name="name"
+              value={inputs.name}
               onChange={handleChange}
             />
+            {errors.name && <div className="error">{errors.name}</div>}
             <input
               type="email"
               placeholder="Email"
               name="email"
+              value={inputs.email}
               onChange={handleChange}
             />
+            {errors.email && <div className="error">{errors.email}</div>}
             <input
               type="password"
               placeholder="Password"
               name="password"
+              value={inputs.password}
               onChange={handleChange}
             />
-            {/* Dropdown input for selecting role */}
-            <select
-              name="role"
-              onChange={handleChange}
-              value={inputs.role}
-            >
+            {errors.password && <div className="error">{errors.password}</div>}
+            <select name="role" onChange={handleChange} value={inputs.role}>
               <option value="">Select User</option>
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
-            {error && <div className="error">{error}</div>}
+            {errors.general && <div className="error">{errors.general}</div>}
             <button onClick={handleClick}>Register</button>
           </form>
         </div>

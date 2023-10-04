@@ -76,6 +76,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/authContext";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 function Report() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -136,6 +138,59 @@ function Report() {
     setTableData(updatedTableData);
 
   };
+  const handleSaveAsPDF = () => {
+    const doc = new jsPDF();
+
+    const tableRows = [];
+    tableRows.push(['Product ID', 'Name', 'Quantity', 'Price', 'Entered By', 'Edited By', 'Modified Date']);
+
+    tableData.forEach(item => {
+      tableRows.push([item.s_no, item.name, item.quantity, item.price, item.enteredBy, item.editedBy || 'Not Edited', item.modified_date ? new Date(item.modified_date).toLocaleDateString() : 'Not modified']);
+    });
+
+    // Add Heading
+  const heading = 'Stock Report';
+  doc.setFontSize(20);
+  doc.text(80, 10, heading);
+
+  // Add Date...
+  const currentDate = selectedDate ? new Date(selectedDate) : new Date();
+  const day = currentDate.getDate().toString().padStart(2, '0');
+  const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+  const year = currentDate.getFullYear();
+  const formattedDate = `${day}/${month}/${year}`;
+
+  doc.setFontSize(12);
+  doc.text(170, 10, formattedDate);
+
+  const startY = 10;
+    doc.autoTable({
+      head: tableRows.slice(0, 1),
+      body: tableRows.slice(1),
+       startY: startY + 10,
+    });
+
+    doc.save('report.pdf');
+  }
+
+  const handlePrint = () => {
+    const doc = new jsPDF();
+
+    const tableRows = [];
+    tableRows.push(['Product ID', 'Name', 'Quantity', 'Price', 'Entered By', 'Edited By', 'Modified Date']);
+
+    tableData.forEach(item => {
+      tableRows.push([item.s_no, item.name, item.quantity, item.price, item.enteredBy, item.editedBy || 'Not Edited', item.modified_date ? new Date(item.modified_date).toLocaleDateString() : 'Not modified']);
+    });
+
+    doc.autoTable({
+      head: tableRows.slice(0, 1),
+      body: tableRows.slice(1),
+    });
+
+    doc.save('report.pdf');
+  }
+
 
   const handleSaveClick = async () => {
     try {
@@ -274,6 +329,9 @@ function Report() {
             </tbody>
           </table>
           {isEditMode && <button onClick={handleSaveClick}>Save</button>}
+          {/* <button onClick={handlePrint}>Print</button> */}
+          <button onClick={handleSaveAsPDF}>Print</button>
+
         </div>
       )}
     </div>

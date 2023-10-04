@@ -10,17 +10,6 @@
   top: 0; /* Stick to the top */
   z-index: 100; /* Ensure it's above other content */
 }
-.button {
-  color: rgb(49, 51, 49);
-  transition: 0.25s;
-}
-
-.button:hover,
-.button:focus {
-  border-color: red;
-  color: #fff;
-}
-
 
 /* Hide the scroll bar */
 .navbar::-webkit-scrollbar {
@@ -35,10 +24,28 @@
   font-size: 30px;
 }
 
+/* .navbar-center {
+  flex: 2;
+  text-align: center;
+  color: aqua;
+} */
 .navbar-center {
   flex: 2;
   text-align: center;
+  color:lightseagreen;
+  font-family: CustomFont, sans-serif;
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
 }
+
+/* Add a hover effect */
+.navbar-center:hover {
+  color:aliceblue; /* Change color on hover */
+  transform: scale(1.1); /* Scale the text on hover */
+}
+
 
 .navbar-right {
   flex: 1;
@@ -49,8 +56,8 @@
 
 .report-button,
 .logout-button {
-  background-color: #4CAF50;
-  color: #fff;
+  background-color:lightseagreen;
+  color:black;
   border: none;
   border-radius: 4px;
   padding: 12px 24px;
@@ -62,24 +69,6 @@
 
 .report-button:hover,
 .logout-button:hover {
-  background-color: #45a049;
-  background-color: #dff265;
-   
-  color:black; 
+  background-color:aliceblue;
   transform: scale(1.1);
-}
-
-
-
-.report-button {
-  
-  /* background-color: #85d765; Set the color to close button color */
-  /* border: none; */
-  
-}
-
-.report-button:hover {
-  /* background-color: #dff265; Adjust hover color */
-  /* color:black; */
-  /* transform: scale(1.1); */
 }
