@@ -118,7 +118,7 @@ body {
   /* Date input styles */
   label {
     font-size: 1rem;
-    margin-left: 10%;
+    margin-left:10px;
     display: block;
     margin-top: 10px;
   }
@@ -129,7 +129,6 @@ body {
     border: 1px solid #ccc;
     border-radius: 4px;
   }
-   
     
     
   

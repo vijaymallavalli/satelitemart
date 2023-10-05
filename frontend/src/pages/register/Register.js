@@ -86,7 +86,7 @@ const Register = () => {
       <div className="card">
         <div className="left">
           <p>Create an account Be a part of Extrovertism</p>
-          <span>Do you have an account?</span>
+          <span> you  Do have an account?</span>
           <Link to="/login">
             <button>Login</button>
           </Link>

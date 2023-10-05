@@ -76,8 +76,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/authContext";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 function Report() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -87,7 +87,7 @@ function Report() {
   const [isEditMode, setIsEditMode] = useState(false);
   const { currentUser } = useContext(AuthContext);
   const [displayedDate, setDisplayedDate] = useState("");
-
+  const [totalAmount, setTotalAmount] = useState(0);
 
   const id = currentUser.id;
   console.log(id);
@@ -104,9 +104,20 @@ function Report() {
           params: { date: selectedDate },
         }
       );
-      setTableData(response.data);
-      setOriginalTableData(response.data); // Store the original data for comparison
-      setError(null); // Clear any previous errors
+      const updatedData = response.data.map((item) => {
+        const totalprice = item.quantity * item.price;
+        return { ...item, totalprice };
+      });
+      // total amount
+      const total = updatedData.reduce((acc, item) => acc + item.totalprice, 0);
+      setTotalAmount(total);
+
+      setTableData(updatedData);
+      setOriginalTableData(updatedData);
+      setError(null);
+      // setTableData(response.data);
+      // setOriginalTableData(response.data); // Store the original data for comparison
+      // setError(null); // Clear any previous errors
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error fetching data. Please try again."); // Set an error message
@@ -119,7 +130,6 @@ function Report() {
       fetchData();
     }
     setDisplayedDate(selectedDate);
-
   }, [selectedDate]);
 
   const toggleEditMode = () => {
@@ -136,61 +146,89 @@ function Report() {
     });
 
     setTableData(updatedTableData);
-
   };
   const handleSaveAsPDF = () => {
     const doc = new jsPDF();
 
     const tableRows = [];
-    tableRows.push(['Product ID', 'Name', 'Quantity', 'Price', 'Entered By', 'Edited By', 'Modified Date']);
+    tableRows.push([
+      "Product ID",
+      "Name",
+      "Quantity",
+      "Price",
+      "Total Price",
+      "Entered By",
+      "Edited By",
+      "Modified Date",
+    ]);
 
-    tableData.forEach(item => {
-      tableRows.push([item.s_no, item.name, item.quantity, item.price, item.enteredBy, item.editedBy || 'Not Edited', item.modified_date ? new Date(item.modified_date).toLocaleDateString() : 'Not modified']);
+    tableData.forEach((item) => {
+      tableRows.push([
+        item.s_no,
+        item.name,
+        item.quantity,
+        item.price,
+        item.totalprice,
+        item.enteredBy,
+        item.editedBy || "Not Edited",
+        item.modified_date
+          ? new Date(item.modified_date).toLocaleDateString()
+          : "Not modified",
+      ]);
     });
 
     // Add Heading
-  const heading = 'Stock Report';
-  doc.setFontSize(20);
-  doc.text(80, 10, heading);
+    const heading = "Stock Report";
+    doc.setFontSize(20);
+    doc.text(80, 10, heading);
 
-  // Add Date...
-  const currentDate = selectedDate ? new Date(selectedDate) : new Date();
-  const day = currentDate.getDate().toString().padStart(2, '0');
-  const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-  const year = currentDate.getFullYear();
-  const formattedDate = `${day}/${month}/${year}`;
+    // Add Date...
+    const currentDate = selectedDate ? new Date(selectedDate) : new Date();
+    const day = currentDate.getDate().toString().padStart(2, "0");
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, "0");
+    const year = currentDate.getFullYear();
+    const formattedDate = `${day}/${month}/${year}`;
 
-  doc.setFontSize(12);
-  doc.text(170, 10, formattedDate);
+    doc.setFontSize(12);
+    doc.text(170, 10, formattedDate);
 
-  const startY = 10;
+    const startY = 10;
     doc.autoTable({
       head: tableRows.slice(0, 1),
       body: tableRows.slice(1),
-       startY: startY + 10,
+      startY: startY + 10,
     });
 
-    doc.save('report.pdf');
-  }
+    // Calculate total amount
+    const totalAmount = tableData.reduce(
+      (total, item) => total + item.totalprice,
+      0
+    );
 
-  const handlePrint = () => {
-    const doc = new jsPDF();
+    // Display total amount in the PDF
+    const finalY = doc.autoTable.previous.finalY + 10; // Position below the table
+    doc.text(`Total Amount: ${totalAmount}`, 80, finalY);
 
-    const tableRows = [];
-    tableRows.push(['Product ID', 'Name', 'Quantity', 'Price', 'Entered By', 'Edited By', 'Modified Date']);
+    doc.save("report.pdf");
+  };
 
-    tableData.forEach(item => {
-      tableRows.push([item.s_no, item.name, item.quantity, item.price, item.enteredBy, item.editedBy || 'Not Edited', item.modified_date ? new Date(item.modified_date).toLocaleDateString() : 'Not modified']);
-    });
+  // const handlePrint = () => {
+  //   const doc = new jsPDF();
 
-    doc.autoTable({
-      head: tableRows.slice(0, 1),
-      body: tableRows.slice(1),
-    });
+  //   const tableRows = [];
+  //   tableRows.push(['Product ID', 'Name', 'Quantity', 'Price', 'Entered By', 'Edited By', 'Modified Date']);
 
-    doc.save('report.pdf');
-  }
+  //   tableData.forEach(item => {
+  //     tableRows.push([item.s_no, item.name, item.quantity, item.price, item.enteredBy, item.editedBy || 'Not Edited', item.modified_date ? new Date(item.modified_date).toLocaleDateString() : 'Not modified']);
+  //   });
 
+  //   doc.autoTable({
+  //     head: tableRows.slice(0, 1),
+  //     body: tableRows.slice(1),
+  //   });
+
+  //   doc.save('report.pdf');
+  // }
 
   const handleSaveClick = async () => {
     try {
@@ -243,8 +281,10 @@ function Report() {
 
   return (
     <div>
-      <h2>Stock Data By Date</h2>
-      <label htmlFor="datePicker">Select Date:</label>
+      <h2 className="hi">Stock Data By Date</h2>
+      <label htmlFor="datePicker" className="dates">
+        Select Date:
+      </label>
       <input
         type="date"
         id="datePicker"
@@ -272,7 +312,7 @@ function Report() {
                 <th>Name</th>
                 <th>Quantity</th>
                 <th>Price</th>
-                {/* <th>Date</th> */}
+                <th>Total Price</th>
                 <th>Enterd By</th>
                 <th>Edited By</th>
                 <th>Modified Date</th>
@@ -310,11 +350,11 @@ function Report() {
                   {/* <td>
                     {new Date(item.enter_date).toLocaleDateString()}{" "}
                   </td> */}
+                  <td>{item.totalprice}</td>
                   <td>{item.enteredBy}</td>
                   <td>
-  {item.editedBy !== null ? item.editedBy : 'Not Edited'}
-</td>
-
+                    {item.editedBy !== null ? item.editedBy : "Not Edited"}
+                  </td>
 
                   <td>
                     {item.modified_date
@@ -323,17 +363,24 @@ function Report() {
                     {/* Display date according to local timezone */}
                   </td>
                   {/* <td>{item.editedBy_id}</td> */}
-
                 </tr>
               ))}
             </tbody>
+            {/* //total amount to dispylay */}
+            <tfoot>
+              <tr>
+                <td colSpan="4"></td>
+                <td>Total Amount= {totalAmount}</td>
+                <td colSpan="2"></td>
+              </tr>
+            </tfoot>
           </table>
           {isEditMode && <button onClick={handleSaveClick}>Save</button>}
           {/* <button onClick={handlePrint}>Print</button> */}
           <button onClick={handleSaveAsPDF}>Print</button>
-
         </div>
       )}
+      {/* <div style={{ textAlign: "center" }}>Total Amount: {totalAmount}</div> */}
     </div>
   );
 }

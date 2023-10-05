@@ -69,10 +69,13 @@ function StockEntryForm() {
     setTableData(updatedTableData);
   };
 
-  const handlePriceChange = (event, id) => {
+  const handleTotalPriceChange = (event, id) => {
     const updatedTableData = tableData.map((item) => {
       if (item.id === id) {
-        return { ...item, price: event.target.value };
+        const quantity = Number(item.quantity);
+        const price = Number(event.target.value);
+        const totalprice = isNaN(quantity) || isNaN(price) ? 0 : quantity * price;
+        return { ...item, price: event.target.value, totalprice };
       }
       return item;
     });
@@ -104,6 +107,12 @@ function StockEntryForm() {
     } catch (error) {
       console.error("Error checking date:", error);
     }
+  };
+
+  const handleReset = () => {
+    setTableData(intialData);
+    setUserInput("");
+    setAlertVisible(false);
   };
 
   const handleSubmit = async (event) => {
@@ -151,6 +160,7 @@ function StockEntryForm() {
     } else {
       setAlertVisible(true);
       setAlertSuccess(false);
+      generateCaptcha();
       // Handle invalid CAPTCHA input here
     }
   };
@@ -170,8 +180,6 @@ function StockEntryForm() {
           name="date"
           // value={date}
           onChange={handleDateChange}
-          
-
           required
         />
 
@@ -187,6 +195,7 @@ function StockEntryForm() {
                 <th>Name</th>
                 <th>Quantity</th>
                 <th>Price</th>
+                <th>Total Price</th>
               </tr>
             </thead>
             <tbody>
@@ -208,9 +217,10 @@ function StockEntryForm() {
                       type="number"
                       name={`P${item.id}`}
                       value={item.price}
-                      onChange={(e) => handlePriceChange(e, item.id)}
+                      onChange={(e) => handleTotalPriceChange(e, item.id)}
                     />
                   </td>
+                  <td>{item.totalprice}</td>
                 </tr>
               ))}
             </tbody>
@@ -239,7 +249,7 @@ function StockEntryForm() {
           <input type="submit" id="btn" required className="sbtn" />
 
           <span>
-            <button id="btn" type="reset" style={{ border: "none" }}>
+            <button id="btn" type="reset" style={{ border: "none" }} onClick={handleReset}>
               Reset
             </button>
           </span>
@@ -256,5 +266,4 @@ function StockEntryForm() {
     </div>
   );
 }
-
 export default StockEntryForm;

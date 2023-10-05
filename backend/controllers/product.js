@@ -19,6 +19,7 @@ import { db } from "../connect.js";
 
 export const postProduct = (req, res) => {
   const { s_no, name, quantity, price, entered_date, enteredBy_id } = req.body;
+  const totalprice = quantity * price;
 
   // Check if the entered_date already exists in the database
   // const checkDateSql = 'SELECT COUNT(*) as count FROM products WHERE entered_date = ?';
@@ -37,8 +38,8 @@ export const postProduct = (req, res) => {
   //   }
 
     // If date is unique, proceed with inserting the data
-    const insertSql = 'INSERT INTO products (s_no, name, quantity, price, entered_date, enteredBy_id) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(insertSql, [s_no, name, quantity, price, entered_date, enteredBy_id], (insertErr, result) => {
+    const insertSql = 'INSERT INTO products (s_no, name, quantity, price, entered_date, enteredBy_id,totalprice) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    db.query(insertSql, [s_no, name, quantity, price, entered_date, enteredBy_id,totalprice], (insertErr, result) => {
       if (insertErr) {
         console.error('Error inserting data:', insertErr);
         res.status(500).json({ error: 'Error inserting data' });

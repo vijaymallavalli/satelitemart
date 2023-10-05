@@ -39,8 +39,8 @@ const Navbar = ({role}) => {
           <button className="report-button" onClick={()=>navigate("/users")}>Users</button>
         </div>
         }
-        <div className="navbar-left">
-          <button className="report-button" onClick={()=>navigate("/")}>Home</button>
+        <div className="navbar-left1">
+          <button className="report-button1" onClick={()=>navigate("/")}>Home</button>
         </div>
 
         <div className="navbar-center">
